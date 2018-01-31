@@ -1,14 +1,14 @@
 package codesquad.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import support.domain.AbstractEntity;
 import support.domain.UrlGeneratable;
+
+import java.util.Date;
 
 @Entity
 public class Answer extends AbstractEntity implements UrlGeneratable {
@@ -40,6 +40,26 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
         this.question = question;
         this.contents = contents;
         this.deleted = false;
+    }
+
+    public Answer setWriter(User writer) {
+        this.writer = writer;
+        return this;
+    }
+
+    public Answer setQuestion(Question question) {
+        this.question = question;
+        return this;
+    }
+
+    public Answer setContents(String contents) {
+        this.contents = contents;
+        return this;
+    }
+
+    public Answer setDeleted(boolean deleted) {
+        this.deleted = deleted;
+        return this;
     }
 
     public User getWriter() {
