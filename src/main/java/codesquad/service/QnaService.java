@@ -44,9 +44,15 @@ public class QnaService {
     }
 
     @Transactional
-    public void update(User loginUser, long id, Question updatedQuestion) throws UnAuthorizedException {
+    public void update(User loginUser, long id, Question newQuestion) throws UnAuthorizedException {
         Question question = findById(id);
-        question.update(loginUser, updatedQuestion);
+        question.update(loginUser, newQuestion);
+    }
+
+    @Transactional
+    public void updateAnswer(User loginUser, long id, Answer newAnswer) throws UnAuthorizedException {
+        Answer answer = findOneAnswer(id);
+        answer.update(loginUser, newAnswer);
     }
 
     @Transactional
@@ -86,6 +92,10 @@ public class QnaService {
         answer.delete(loginUser);
     }
 
+    public Answer findOneAnswer(long id) {
+        return answerRepository.findOne(id);
+    }
+
     public Iterable<Question> findAll() {
         return questionRepository.findByDeleted(false);
     }
@@ -94,7 +104,16 @@ public class QnaService {
         return questionRepository.findAll(pageable).getContent();
     }
 
+    @Transactional
     public Answer addAnswer(User loginUser, long questionId, String contents) {
-        return null;
+        Question question = questionRepository.findOne(questionId);
+        Answer answer = new Answer()
+                .setContents(contents)
+                .setWriter(loginUser)
+                .setQuestion(question);
+        question.addAnswer(answer);
+        return answer;
     }
+
+
 }

@@ -3,6 +3,7 @@ package codesquad.domain;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 
+import codesquad.dto.AnswerDto;
 import codesquad.etc.CannotDeleteException;
 import codesquad.etc.UnAuthorizedException;
 import org.springframework.data.annotation.CreatedDate;
@@ -103,5 +104,22 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
             this.deleted = true;
 
         throw new CannotDeleteException("The user has no authorization.");
+    }
+
+    public AnswerDto toAnswerDto() {
+        return new AnswerDto()
+                .setId(getId())
+                .setWriter(this.writer)
+                .setContents(this.contents)
+                .setDeleted(this.deleted)
+                .setQuestion(this.question);
+    }
+
+    public void update(User loginUser, Answer newAnswer) {
+        if (writer.equals(loginUser)) {
+            this.contents = newAnswer.getContents();
+            return;
+        }
+        throw new UnAuthorizedException();
     }
 }
