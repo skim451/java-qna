@@ -4,7 +4,6 @@ import codesquad.domain.Question;
 import codesquad.domain.User;
 import codesquad.etc.CannotDeleteException;
 import codesquad.etc.UnAuthorizedException;
-import codesquad.security.HttpSessionUtils;
 import codesquad.security.LoginUser;
 import codesquad.service.QnaService;
 import org.slf4j.Logger;

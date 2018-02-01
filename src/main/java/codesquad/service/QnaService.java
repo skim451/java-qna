@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.annotation.Resource;
 
 import codesquad.domain.*;
+import codesquad.dto.QuestionDto;
 import codesquad.etc.UnAuthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class QnaService {
     }
 
     public Question findById(long id) {
-        return Optional.of(questionRepository.findOne(id))
+        return Optional.ofNullable(questionRepository.findOne(id))
                         .filter(i -> !i.isDeleted())
                         .orElse(null);
     }
