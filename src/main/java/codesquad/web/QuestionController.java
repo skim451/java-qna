@@ -3,6 +3,7 @@ package codesquad.web;
 import codesquad.domain.Question;
 import codesquad.domain.User;
 import codesquad.etc.CannotDeleteException;
+import codesquad.security.HttpSessionUtils;
 import codesquad.security.LoginUser;
 import codesquad.service.QnaService;
 import org.slf4j.Logger;
@@ -50,12 +51,28 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteQuestion(@LoginUser User loginUser, @PathVariable long id) {
+    public String deleteQuestion(@PathVariable long id, @LoginUser User loginUser) {
         try {
             qnaService.deleteQuestion(loginUser, id);
+            log.debug("delete success");
         } catch (CannotDeleteException e) {
             log.debug(e.getMessage());
+            log.debug("delete failed");
         }
         return "redirect:/";
+    }
+
+    @GetMapping("/{id}/form")
+    public String getQuestionForm(@PathVariable long id, Model model) {
+        Question question = qnaService.findById(id);
+        model.addAttribute("question", question);
+        return "qna/update_form";
+    }
+
+    @PutMapping("/{id}")
+    public String updateQuestion(@PathVariable long id, @LoginUser User loginUser, Question question) {
+        qnaService.update(loginUser, id, question);
+
+        return "redirect:/questions/" + id;
     }
 }
