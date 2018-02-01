@@ -14,6 +14,7 @@ import support.test.AcceptanceTest;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class QuestionAcceptanceTest extends AcceptanceTest {
 
@@ -71,5 +72,49 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         assertThat(response.getBody().contains("title"), is(true));
     }
 
+    private ResponseEntity<String> update(TestRestTemplate template) throws Exception {
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
 
+        builder.addParameter("_method", "put")
+                .addParameter("title", "new title")
+                .addParameter("contents", "new contents");
+        HttpEntity<MultiValueMap<String, Object>> request = builder.build();
+
+        return template.postForEntity(String.format("/questions/%d", defaultUser().getId()), request, String.class);
+    }
+
+    @Test
+    public void update_login() throws Exception {
+        ResponseEntity<String> response = update(basicAuthTemplate());
+        assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
+        assertTrue(response.getHeaders().getLocation().getPath().startsWith("/questions"));
+    }
+
+    @Test
+    public void update_no_login() throws Exception {
+        ResponseEntity<String> response = update(template());
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
+    }
+
+    private ResponseEntity<String> delete(TestRestTemplate template, long id) throws Exception {
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
+        builder.addParameter("_method", "DELETE");
+
+        return template.postForEntity(String.format("/questions/%d", id), builder.build(), String.class);
+    }
+
+    @Test
+    public void delete_login() throws Exception {
+        ResponseEntity<String> response = delete(basicAuthTemplate(), 1);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
+        assertTrue(response.getHeaders().getLocation().getPath().startsWith("/"));
+    }
+
+    @Test
+    public void delete_no_login() throws Exception {
+        ResponseEntity<String> response = delete(template(), 1);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
+    }
 }

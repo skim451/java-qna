@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.annotation.Resource;
 
 import codesquad.domain.*;
+import codesquad.etc.UnAuthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -41,12 +42,10 @@ public class QnaService {
                         .orElse(null);
     }
 
-    public Question update(User loginUser, long id, Question updatedQuestion) {
+    @Transactional
+    public void update(User loginUser, long id, Question updatedQuestion) throws UnAuthorizedException {
         Question question = findById(id);
-        question.setTitle(updatedQuestion.getTitle());
-        question.setContents(updatedQuestion.getContents());
-
-        return questionRepository.save(question);
+        question.update(loginUser, updatedQuestion);
     }
 
     @Transactional
@@ -59,16 +58,31 @@ public class QnaService {
             throw new CannotDeleteException("No authentication on this question.");
 
         question.setDeleted(true);
-        questionRepository.save(question);
 
         DeleteHistory questionDeleteHistory = new DeleteHistory(ContentType.QUESTION,
                 question.getId(),
                 loginUser,
                 LocalDateTime.now());
 
-        question.getAnswers().forEach(i -> deleteAnswer(loginUser, i.getId()));
+        List<Answer> answers = question.getAnswers();
+
+        for (Answer answer: answers) {
+            deleteAnswer(loginUser, answer.getId());
+        }
 
         deleteHistoryService.saveAll(Arrays.asList(questionDeleteHistory));
+    }
+
+    @Transactional
+    public void deleteAnswer(User loginUser, long id) throws CannotDeleteException {
+        DeleteHistory answerDeleteHistory = new DeleteHistory(ContentType.ANSWER,
+                id,
+                loginUser,
+                LocalDateTime.now());
+
+        deleteHistoryService.saveAll(Arrays.asList(answerDeleteHistory));
+        Answer answer = answerRepository.findOne(id);
+        answer.delete(loginUser);
     }
 
     public Iterable<Question> findAll() {
@@ -81,17 +95,5 @@ public class QnaService {
 
     public Answer addAnswer(User loginUser, long questionId, String contents) {
         return null;
-    }
-
-    public Answer deleteAnswer(User loginUser, long id) {
-        DeleteHistory answerDeleteHistory = new DeleteHistory(ContentType.ANSWER,
-                id,
-                loginUser,
-                LocalDateTime.now());
-
-        deleteHistoryService.saveAll(Arrays.asList(answerDeleteHistory));
-        Answer answer = answerRepository.findOne(id);
-        answer.setDeleted(true);
-        return answerRepository.save(answer);
     }
 }
