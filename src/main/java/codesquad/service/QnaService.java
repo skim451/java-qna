@@ -88,7 +88,7 @@ public class QnaService {
                 LocalDateTime.now());
 
         deleteHistoryService.saveAll(Arrays.asList(answerDeleteHistory));
-        Answer answer = answerRepository.findOne(id);
+        Answer answer = findOneAnswer(id);
         answer.delete(loginUser);
     }
 

@@ -30,7 +30,6 @@ public class ApiQuestionController {
 
     @PostMapping("")
     public ResponseEntity<Void> createQuestion(@LoginUser User loginUser, @Valid @RequestBody QuestionDto questionDto) {
-        log.debug(" hello ");
         Question question = qnaService.create(loginUser,
                 new Question(questionDto.getTitle(), questionDto.getContents()));
 

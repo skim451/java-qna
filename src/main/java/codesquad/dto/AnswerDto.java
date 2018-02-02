@@ -71,10 +71,7 @@ public class AnswerDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AnswerDto answerDto = (AnswerDto) o;
-        return deleted == answerDto.deleted &&
-                Objects.equals(writer, answerDto.writer) &&
-                Objects.equals(question, answerDto.question) &&
-                Objects.equals(contents, answerDto.contents);
+        return Objects.equals(contents, answerDto.contents);
     }
 
     @Override
