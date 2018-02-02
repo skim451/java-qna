@@ -1,6 +1,5 @@
 package codesquad.web;
 
-import codesquad.domain.Answer;
 import codesquad.domain.Question;
 import codesquad.domain.User;
 import codesquad.dto.AnswerDto;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import support.test.AcceptanceTest;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -20,7 +18,6 @@ import static org.junit.Assert.assertThat;
 public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 
     private static final Logger log = LoggerFactory.getLogger(ApiAnswerAcceptanceTest.class);
-
     private QuestionDto createQuestionDto(String title) {
         return new QuestionDto(title, "contents");
     }
@@ -36,6 +33,7 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
                 .setQuestion(new Question()
                         .setTitle(question.getTitle())
                         .setContents(question.getContents()));
+
     }
 
     @Test
