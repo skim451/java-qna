@@ -35,15 +35,15 @@ public class ApiQuestionController {
                 new Question(questionDto.getTitle(), questionDto.getContents()));
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/questions/" + question.getId()));
+        headers.setLocation(URI.create(question.generateUrl()));
         return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public QuestionDto showQuestionDetail(@PathVariable long id) {
-        Question question = qnaService.findById(id);
+        Optional<Question> optQuestion = qnaService.findById(id);
 
-        return Optional.ofNullable(question)
+        return optQuestion
                 .map(Question::toQuestionDto)
                 .orElse(null);
     }

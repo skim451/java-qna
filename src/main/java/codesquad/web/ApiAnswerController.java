@@ -1,10 +1,8 @@
 package codesquad.web;
 
 import codesquad.domain.Answer;
-import codesquad.domain.Question;
 import codesquad.domain.User;
 import codesquad.dto.AnswerDto;
-import codesquad.dto.QuestionDto;
 import codesquad.etc.CannotDeleteException;
 import codesquad.etc.UnAuthorizedException;
 import codesquad.security.LoginUser;
@@ -22,7 +20,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/answers")
+@RequestMapping("/api/questions/{questionId}/answers")
 public class ApiAnswerController {
 
     private static final Logger log = LoggerFactory.getLogger(ApiAnswerController.class);
@@ -31,11 +29,13 @@ public class ApiAnswerController {
     private QnaService qnaService;
 
     @PostMapping("")
-    public ResponseEntity<Void> createAnswer(@LoginUser User loginUser, @Valid @RequestBody AnswerDto answerDto) {
-        Answer answer = qnaService.addAnswer(loginUser, answerDto.getQuestion().getId(), answerDto.getContents());
+    public ResponseEntity<Void> createAnswer(@LoginUser User loginUser,
+                                             @PathVariable long questionId,
+                                             @Valid @RequestBody AnswerDto answerDto) {
+        Answer answer = qnaService.addAnswer(loginUser, questionId, answerDto.getContents());
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/answers/" + answerDto.getId()));
+        headers.setLocation(URI.create(answer.generateUrl()));
         return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
 
@@ -49,7 +49,9 @@ public class ApiAnswerController {
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable long id, @LoginUser User loginUser, @Valid @RequestBody AnswerDto answerDto) {
+    public void update(@PathVariable long id,
+                       @LoginUser User loginUser,
+                       @Valid @RequestBody AnswerDto answerDto) {
         try {
             qnaService.updateAnswer(loginUser, id, new Answer()
                     .setContents(answerDto.getContents()));
@@ -59,7 +61,8 @@ public class ApiAnswerController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable long id, @LoginUser User loginUser) {
+    public void delete(@PathVariable long id,
+                       @LoginUser User loginUser) {
         try {
             qnaService.deleteAnswer(loginUser, id);
             log.debug("delete success");

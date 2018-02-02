@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityNotFoundException;
 
 import codesquad.domain.*;
 import codesquad.dto.QuestionDto;
@@ -37,16 +38,15 @@ public class QnaService {
         return questionRepository.save(question);
     }
 
-    public Question findById(long id) {
+    public Optional<Question> findById(long id) {
         return Optional.ofNullable(questionRepository.findOne(id))
-                        .filter(i -> !i.isDeleted())
-                        .orElse(null);
+                        .filter(i -> !i.isDeleted());
     }
 
     @Transactional
     public void update(User loginUser, long id, Question newQuestion) throws UnAuthorizedException {
-        Question question = findById(id);
-        question.update(loginUser, newQuestion);
+        Optional<Question> optQuestion = findById(id);
+        optQuestion.ifPresent(question -> question.update(loginUser, newQuestion));
     }
 
     @Transactional
@@ -105,13 +105,16 @@ public class QnaService {
     }
 
     @Transactional
-    public Answer addAnswer(User loginUser, long questionId, String contents) {
-        Question question = questionRepository.findOne(questionId);
+    public Answer addAnswer(User loginUser, long questionId, String contents) throws EntityNotFoundException {
+        Optional<Question> optQuestion = findById(questionId);
+        Question question = optQuestion.orElseThrow(EntityNotFoundException::new);
+
         Answer answer = new Answer()
                 .setContents(contents)
                 .setWriter(loginUser)
                 .setQuestion(question);
         question.addAnswer(answer);
+
         return answer;
     }
 

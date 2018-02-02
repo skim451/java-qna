@@ -111,7 +111,6 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
                 .setId(getId())
                 .setWriter(this.writer)
                 .setContents(this.contents)
-                .setDeleted(this.deleted)
                 .setQuestion(this.question);
     }
 
