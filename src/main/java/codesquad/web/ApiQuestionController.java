@@ -35,7 +35,7 @@ public class ApiQuestionController {
                 new Question(questionDto.getTitle(), questionDto.getContents()));
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/questions/" + question.getId()));
+        headers.setLocation(URI.create(question.generateUrl()));
         return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
     }
 
