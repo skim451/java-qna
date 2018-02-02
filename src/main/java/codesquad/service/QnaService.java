@@ -57,22 +57,10 @@ public class QnaService {
 
     @Transactional
     public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
-        if (loginUser == null)
-            throw new CannotDeleteException("No login user.");
-
         Question question = questionRepository.findOne(questionId);
-        if (!loginUser.equals(question.getWriter()))
-            throw new CannotDeleteException("No authentication on this question.");
-
-        question.setDeleted(true);
-
-        DeleteHistory questionDeleteHistory = new DeleteHistory(ContentType.QUESTION,
-                question.getId(),
-                loginUser,
-                LocalDateTime.now());
+        DeleteHistory questionDeleteHistory = question.delete(loginUser);
 
         List<Answer> answers = question.getAnswers();
-
         for (Answer answer: answers) {
             deleteAnswer(loginUser, answer.getId());
         }
@@ -82,14 +70,10 @@ public class QnaService {
 
     @Transactional
     public void deleteAnswer(User loginUser, long id) throws CannotDeleteException {
-        DeleteHistory answerDeleteHistory = new DeleteHistory(ContentType.ANSWER,
-                id,
-                loginUser,
-                LocalDateTime.now());
+        Answer answer = findOneAnswer(id);
+        DeleteHistory answerDeleteHistory = answer.delete(loginUser);
 
         deleteHistoryService.saveAll(Arrays.asList(answerDeleteHistory));
-        Answer answer = findOneAnswer(id);
-        answer.delete(loginUser);
     }
 
     public Answer findOneAnswer(long id) {

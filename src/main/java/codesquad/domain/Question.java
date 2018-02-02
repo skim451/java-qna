@@ -1,5 +1,6 @@
 package codesquad.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 
+import codesquad.etc.CannotDeleteException;
 import codesquad.etc.UnAuthorizedException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
@@ -77,11 +79,6 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         return this;
     }
 
-    public Question setDeleted(boolean deleted) {
-        this.deleted = deleted;
-        return this;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -105,6 +102,17 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 
     public List<Answer> getAnswers() {
         return this.answers;
+    }
+
+    public DeleteHistory delete(User loginUser) throws CannotDeleteException {
+        if (!writer.equals(loginUser) || answers.stream().anyMatch(answer -> !answer.getWriter().equals(loginUser)))
+            throw new CannotDeleteException("Question delete failed. ");
+
+        this.deleted = true;
+        return new DeleteHistory(ContentType.QUESTION,
+                getId(),
+                loginUser,
+                LocalDateTime.now());
     }
 
     public void update(User loginUser, Question newQuestion) {
