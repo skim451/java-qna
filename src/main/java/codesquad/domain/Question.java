@@ -3,6 +3,7 @@ package codesquad.domain;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -104,15 +105,27 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         return this.answers;
     }
 
-    public DeleteHistory delete(User loginUser) throws CannotDeleteException {
-        if (!writer.equals(loginUser) || answers.stream().anyMatch(answer -> !answer.getWriter().equals(loginUser)))
+    public List<DeleteHistory> delete(User loginUser) throws CannotDeleteException {
+        if (!writer.equals(loginUser))
             throw new CannotDeleteException("Question delete failed. ");
 
         this.deleted = true;
-        return new DeleteHistory(ContentType.QUESTION,
+        List<DeleteHistory> historyList = new ArrayList<>();
+        historyList.add(new DeleteHistory(ContentType.QUESTION,
                 getId(),
                 loginUser,
-                LocalDateTime.now());
+                LocalDateTime.now()));
+
+        for(Answer answer : answers) {
+            answer.delete(loginUser);
+
+            historyList.add(new DeleteHistory(ContentType.ANSWER,
+                    answer.getId(),
+                    loginUser,
+                    LocalDateTime.now()));
+        }
+
+        return historyList;
     }
 
     public void update(User loginUser, Question newQuestion) {
